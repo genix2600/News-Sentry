@@ -49,10 +49,10 @@ DT.fit(xv_train, y_train)
 GB.fit(xv_train, y_train)
 RF.fit(xv_train, y_train)
 
-joblib.dump(LR, "logistic_model.pkl", compress=3)
+joblib.dump(RF, 'random_forest_model.pkl', compress=3)
+joblib.dump(LR, "logistic_model.pkl")
 joblib.dump(DT, 'decision_tree_model.pkl')
 joblib.dump(GB, 'gradient_boosting_model.pkl')
-joblib.dump(RF, 'random_forest_model.pkl')
 joblib.dump(vectorizer, 'vectorizer.pkl')
 
-print("✅ Models trained and saved successfully.")
+print("Models trained and saved successfully.")

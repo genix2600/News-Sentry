@@ -4,13 +4,22 @@ import re
 import string
 import streamlit as st
 import sys
+import os
 
-vectorizer = joblib.load("vectorizer.pkl")
-LR = joblib.load("logistic_model.pkl")
-DT = joblib.load("decision_tree_model.pkl")
-GB = joblib.load("gradient_boosting_model.pkl")
-RF = joblib.load("random_forest_model.pkl")
+# === Load Models and Vectorizer with Error Handling ===
+def load_model(path):
+    if not os.path.exists(path):
+        st.error(f"Missing file: {path}")
+        st.stop()
+    return joblib.load(path)
 
+vectorizer = load_model("vectorizer.pkl")
+LR = load_model("logistic_model.pkl")
+DT = load_model("decision_tree_model.pkl")
+GBC = load_model("gradient_boosting_model.pkl")
+RF = load_model("random_forest_model.pkl")
+
+# === Text Preprocessing ===
 def wordopt(text):
     text = text.lower()
     text = re.sub(r'\[.*?\]', '', text)
@@ -19,6 +28,7 @@ def wordopt(text):
     text = re.sub(r'<.*?>+', '', text)
     text = re.sub('[%s]' % re.escape(string.punctuation), '', text)
     text = re.sub(r'\w*\d\w*', '', text)
+    text = re.sub(r'\s+', ' ', text).strip()
     return text
 
 def output_label(n):
@@ -31,15 +41,27 @@ def get_explanation(prediction):
         "This headline shows signs commonly seen in fake news — possibly emotional or misleading phrasing."
     )
 
+# === Sidebar Model Descriptions ===
 def model_details():
     st.sidebar.markdown("### Model Descriptions")
-    st.sidebar.markdown("**Logistic Regression (LR):** Simple model using word frequency patterns.")
-    st.sidebar.markdown("**Decision Tree (DT):** Rule-based system analyzing text features.")
-    st.sidebar.markdown("**Gradient Boosting (GBC):** Builds multiple trees, learns from mistakes.")
-    st.sidebar.markdown("**Random Forest (RF):** Collection of decision trees voting together.")
+    model_choice = st.sidebar.selectbox("Choose a model to learn more:", ["All", "Logistic Regression", "Decision Tree", "Gradient Boosting", "Random Forest"])
+    
+    descriptions = {
+        "Logistic Regression": "Simple model using word frequency patterns.",
+        "Decision Tree": "Rule-based system analyzing text features.",
+        "Gradient Boosting": "Builds multiple trees, learns from mistakes.",
+        "Random Forest": "Collection of decision trees voting together."
+    }
 
+    if model_choice == "All":
+        for name, desc in descriptions.items():
+            st.sidebar.markdown(f"**{name}:** {desc}")
+    else:
+        st.sidebar.markdown(f"**{model_choice}:** {descriptions[model_choice]}")
+
+# === Streamlit Web App ===
 def run_streamlit_app():
-    st.title("Fake News Classifier")
+    st.title("📰 Fake News Headline Classifier")
     model_details()
 
     headline = st.text_input("Enter a news headline:")
@@ -51,11 +73,11 @@ def run_streamlit_app():
         models = {
             "Logistic Regression": LR,
             "Decision Tree": DT,
-            "Gradient Boosting": GB,
+            "Gradient Boosting": GBC,
             "Random Forest": RF
         }
 
-        st.subheader("Model Predictions")
+        st.subheader("🔍 Model Predictions")
         predictions = []
         confidences = []
 
@@ -68,8 +90,8 @@ def run_streamlit_app():
             confidences.append((prediction, confidence))
 
             color = "green" if prediction == 1 else "red"
-            st.markdown(f"**{name}:** :{color}[{label}]  ")
-            st.markdown(f"Confidence: `{confidence}%`  ")
+            st.markdown(f"**{name}:** :{color}[{label}]")
+            st.markdown(f"Confidence: `{confidence}%`")
             st.markdown(f"Explanation: {get_explanation(prediction)}")
             st.markdown("---")
 
@@ -85,15 +107,15 @@ def run_streamlit_app():
         st.info(f"Models voted — Real: {real_count}, Fake: {fake_count}")
         st.info(f"Overall Confidence: {confidence_percent}%")
 
+# === Manual Testing (CLI) ===
 def manual_testing(news):
-    new_data = pd.DataFrame({'title': [news]})
-    new_data['title'] = new_data['title'].apply(wordopt)
-    new_xv = vectorizer.transform(new_data['title'])
+    processed = wordopt(news)
+    new_xv = vectorizer.transform([processed])
 
     models = {
         "Logistic Regression": LR,
         "Decision Tree": DT,
-        "Gradient Boosting": GB,
+        "Gradient Boosting": GBC,
         "Random Forest": RF
     }
 
@@ -127,6 +149,7 @@ def manual_testing(news):
     print(f"Based on {real_count} real and {fake_count} fake votes out of {len(predictions)} models.")
     print(f"Overall Confidence (weighted): {confidence_percent}%")
 
+# === Model Info (CLI help) ===
 def model_info():
     print("\nAvailable Models and Their Roles:")
     print("- Logistic Regression (LR): Predicts using word frequency patterns.")
@@ -148,6 +171,7 @@ def model_info():
     else:
         print("Invalid input.")
 
+# === Entry Point ===
 if __name__ == "__main__":
     if hasattr(st, "_is_running_with_streamlit") and st._is_running_with_streamlit:
         run_streamlit_app()

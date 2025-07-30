@@ -8,8 +8,8 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 import joblib
 
-data_fake = pd.read_csv(r"C:\Users\aarya\Dropbox\PC\Downloads\Classify Headlines AI\FAKE.csv")
-data_true = pd.read_csv(r"C:\Users\aarya\Dropbox\PC\Downloads\Classify Headlines AI\REAL.csv")
+data_fake = pd.read_csv("FAKE.csv")
+data_true = pd.read_csv("REAL.csv")
 
 data_fake["class"] = 0
 data_true["class"] = 1
@@ -49,10 +49,10 @@ DT.fit(xv_train, y_train)
 GB.fit(xv_train, y_train)
 RF.fit(xv_train, y_train)
 
-joblib.dump(LR, r'C:\Users\aarya\Dropbox\PC\Downloads\Classify Headlines AI\logistic_model.pkl')
-joblib.dump(DT, r'C:\Users\aarya\Dropbox\PC\Downloads\Classify Headlines AI\decision_tree_model.pkl')
-joblib.dump(GB, r'C:\Users\aarya\Dropbox\PC\Downloads\Classify Headlines AI\gradient_boosting_model.pkl')
-joblib.dump(RF, r'C:\Users\aarya\Dropbox\PC\Downloads\Classify Headlines AI\random_forest_model.pkl')
-joblib.dump(vectorizer, r'C:\Users\aarya\Dropbox\PC\Downloads\Classify Headlines AI\vectorizer.pkl')
+joblib.dump(LR, 'logistic_model.pkl')
+joblib.dump(DT, 'decision_tree_model.pkl')
+joblib.dump(GB, 'gradient_boosting_model.pkl')
+joblib.dump(RF, 'random_forest_model.pkl')
+joblib.dump(vectorizer, 'vectorizer.pkl')
 
 print("✅ Models trained and saved successfully.")

@@ -3,11 +3,11 @@ import pandas as pd
 import re
 import string
 
-vectorizer = joblib.load(r"C:\Users\aarya\Dropbox\PC\Downloads\Classify Headlines AI\vectorizer.pkl")
-LR = joblib.load(r"C:\Users\aarya\Dropbox\PC\Downloads\Classify Headlines AI\logistic_model.pkl")
-DT = joblib.load(r"C:\Users\aarya\Dropbox\PC\Downloads\Classify Headlines AI\decision_tree_model.pkl")
-GB = joblib.load(r"C:\Users\aarya\Dropbox\PC\Downloads\Classify Headlines AI\gradient_boosting_model.pkl")
-RF = joblib.load(r"C:\Users\aarya\Dropbox\PC\Downloads\Classify Headlines AI\random_forest_model.pkl")
+vectorizer = joblib.load("vectorizer.pkl")
+LR = joblib.load("logistic_model.pkl")
+DT = joblib.load("decision_tree_model.pkl")
+GB = joblib.load("gradient_boosting_model.pkl")
+RF = joblib.load("random_forest_model.pkl")
 
 def wordopt(text):
     text = text.lower()

@@ -6,7 +6,6 @@ import streamlit as st
 import sys
 import os
 
-# === Load Models and Vectorizer with Error Handling ===
 def load_model(path):
     if not os.path.exists(path):
         st.error(f"Missing file: {path}")
@@ -19,7 +18,6 @@ DT = load_model("decision_tree_model.pkl")
 GBC = load_model("gradient_boosting_model.pkl")
 RF = load_model("random_forest_model.pkl")
 
-# === Text Preprocessing ===
 def wordopt(text):
     text = text.lower()
     text = re.sub(r'\[.*?\]', '', text)
@@ -41,7 +39,6 @@ def get_explanation(prediction):
         "This headline shows signs commonly seen in fake news — possibly emotional or misleading phrasing."
     )
 
-# === Sidebar Model Descriptions ===
 def model_details():
     st.sidebar.markdown("### Model Descriptions")
     model_choice = st.sidebar.selectbox("Choose a model to learn more:", ["All", "Logistic Regression", "Decision Tree", "Gradient Boosting", "Random Forest"])
@@ -59,7 +56,6 @@ def model_details():
     else:
         st.sidebar.markdown(f"**{model_choice}:** {descriptions[model_choice]}")
 
-# === Streamlit Web App ===
 def run_streamlit_app():
     st.title("📰 Fake News Headline Classifier")
     model_details()
@@ -107,7 +103,6 @@ def run_streamlit_app():
         st.info(f"Models voted — Real: {real_count}, Fake: {fake_count}")
         st.info(f"Overall Confidence: {confidence_percent}%")
 
-# === Manual Testing (CLI) ===
 def manual_testing(news):
     processed = wordopt(news)
     new_xv = vectorizer.transform([processed])
@@ -149,29 +144,43 @@ def manual_testing(news):
     print(f"Based on {real_count} real and {fake_count} fake votes out of {len(predictions)} models.")
     print(f"Overall Confidence (weighted): {confidence_percent}%")
 
-# === Model Info (CLI help) ===
 def model_info():
     print("\nAvailable Models and Their Roles:")
     print("- Logistic Regression (LR): Predicts using word frequency patterns.")
     print("- Decision Tree (DT): Rule-based breakdown of features.")
     print("- Gradient Boosting (GBC): Learns from previous mistakes across multiple trees.")
     print("- Random Forest (RF): Uses multiple trees to vote on the result.\n")
-
+    
     model_choice = input("Type the model name (LR, DT, GBC, RF) or 'back': ").strip().upper()
+    
     if model_choice == "LR":
-        print("LR: Weights word patterns and predicts probability.")
+        print("\nLogistic Regression (LR):")
+        print(" - This model checks which words commonly appear in real or fake headlines.")
+        print(" - It assigns weights to these words and calculates a probability score.")
+        print(" - For example, clickbait words like 'shocking' or 'you won't believe' might lower the realness score.")
+        print(" - Fast and works well when there's a clear difference in word usage.")
     elif model_choice == "DT":
-        print("DT: Follows yes/no paths to classify.")
+        print("\nDecision Tree (DT):")
+        print(" - Breaks headlines into conditions like 'Does this word appear?' or 'Is this phrase used?'.")
+        print(" - Follows these rules step-by-step like a flowchart to make a decision.")
+        print(" - Easy to understand and explain, but can sometimes overfit on small patterns.")
     elif model_choice == "GBC":
-        print("GBC: Builds on errors to improve.")
+        print("\nGradient Boosting Classifier (GBC):")
+        print(" - This model builds a series of decision trees.")
+        print(" - Each new tree corrects the mistakes made by the previous one.")
+        print(" - It's excellent at picking up complex combinations of words or patterns that single trees might miss.")
+        print(" - Takes longer to train but usually gives better accuracy.")
     elif model_choice == "RF":
-        print("RF: Ensemble of trees that vote.")
+        print("\nRandom Forest (RF):")
+        print(" - Builds many decision trees on different parts of the data.")
+        print(" - Each tree votes on whether the headline is real or fake.")
+        print(" - The majority vote becomes the final prediction.")
+        print(" - This makes it very stable and less prone to errors from individual trees.")
     elif model_choice == "BACK":
         return
     else:
-        print("Invalid input.")
+        print("Invalid input. Type one of: LR, DT, GBC, RF or 'back' to return.")
 
-# === Entry Point ===
 if __name__ == "__main__":
     if hasattr(st, "_is_running_with_streamlit") and st._is_running_with_streamlit:
         run_streamlit_app()

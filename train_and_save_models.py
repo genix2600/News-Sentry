@@ -38,13 +38,13 @@ x = data['title']
 y = data['class']
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.25)
 
-vectorizer = TfidfVectorizer(max_features=5000, ngram_range=(1,2))
+vectorizer = TfidfVectorizer(max_features=20000, ngram_range=(1,2))
 xv_train = vectorizer.fit_transform(x_train)
 
-LR = LogisticRegression(max_iter=2000)
+LR = LogisticRegression(max_iter=3000)
 GB = GradientBoostingClassifier()
 XGB = XGBClassifier(use_label_encoder=False, eval_metric='logloss')
-PAC = PassiveAggressiveClassifier(max_iter=1000)
+PAC = PassiveAggressiveClassifier(max_iter=2000)
 SVM = LinearSVC()
 NB = MultinomialNB()
 

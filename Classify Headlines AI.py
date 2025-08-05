@@ -67,49 +67,42 @@ def model_details():
 
     descriptions = {
         "Logistic Regression": (
-            "### Logistic Regression\n"
             "- **Type:** Linear Model\n"
             "- **How it works:** Calculates weighted sum of features and applies a logistic function for probability.\n"
             "- **Strengths:** Simple, interpretable, fast.\n"
             "- **Limitations:** Struggles with non-linear patterns."
         ),
         "Gradient Boosting": (
-            "### Gradient Boosting\n"
             "- **Type:** Ensemble Method\n"
             "- **How it works:** Builds trees sequentially to correct previous errors.\n"
             "- **Strengths:** Handles complex relationships.\n"
             "- **Limitations:** Slower and needs tuning."
         ),
         "Extreme Gradient Boosting (XGBoost)": (
-            "### Extreme Gradient Boosting (XGBoost)\n"
             "- **Type:** Advanced Ensemble Method\n"
             "- **How it works:** Optimized gradient boosting with regularization and parallelism.\n"
             "- **Strengths:** High accuracy, handles missing values.\n"
             "- **Use case:** Popular in Kaggle competitions."
         ),
         "Passive Aggressive Classifier": (
-            "### Passive Aggressive Classifier\n"
             "- **Type:** Online Learning Algorithm\n"
             "- **How it works:** Updates weights only when prediction is wrong (aggressive) or correct (passive).\n"
             "- **Strengths:** Fast for large-scale text data.\n"
             "- **Limitations:** Sensitive to outliers."
         ),
         "Linear SVM": (
-            "### Linear Support Vector Machine\n"
             "- **Type:** Linear Classifier\n"
             "- **How it works:** Finds a hyperplane that separates classes with max margin.\n"
             "- **Strengths:** Excellent for high-dimensional text data.\n"
             "- **Limitations:** Harder to interpret."
         ),
         "Naive Bayes": (
-            "### Naive Bayes Classifier\n"
             "- **Type:** Probabilistic Classifier\n"
             "- **How it works:** Applies Bayes' theorem with independence assumption.\n"
             "- **Strengths:** Extremely fast and efficient for text.\n"
             "- **Limitations:** Assumes independence between words."
         ),
         "Voting Classifier (Soft)": (
-            "### Voting Classifier (Soft)\n"
             "- **Type:** Ensemble Method\n"
             "- **How it works:** Combines predictions of multiple models by averaging probabilities.\n"
             "- **Strengths:** Often more stable and accurate.\n"
@@ -157,7 +150,7 @@ def run_streamlit_app():
             "Breaking: US declares war on Mars",
             "Aliens spotted at the White House",
             "Elon Musk buys the moon for $1 trillion",
-            "World to end tomorrow, scientists confirm",
+            "The world will end day after tomorrow",
             "Man claims he traveled through time to stop pandemic",
             "NASA announces successful moon mission",
             "COVID-19 vaccines approved worldwide",

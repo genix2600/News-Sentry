@@ -124,12 +124,12 @@ def run_streamlit_app():
         st.code(processed)
 
         with st.spinner("Analyzing..."):
-        new_xv = vectorizer.transform([processed])
+            new_xv = vectorizer.transform([processed])
         # ...rest of your model prediction logic
 
 
             with st.spinner("Analyzing..."):
-            new_xv = vectorizer.transform([processed])
+                new_xv = vectorizer.transform([processed])
 
             predictions = []
             confidences = []
@@ -200,6 +200,7 @@ def manual_testing(news):
 
 if __name__ == "__main__":
     run_streamlit_app()
+
 
 
 

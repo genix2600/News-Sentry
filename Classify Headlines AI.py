@@ -5,7 +5,6 @@ import string
 import streamlit as st
 import os
 
-
 @st.cache_resource
 def load_model(path):
     if not os.path.exists(path):
@@ -15,15 +14,14 @@ def load_model(path):
     
 vectorizer = load_model('vectorizer.pkl')
 LR = load_model("logistic_model.pkl")
-DT = load_model("decision_tree_model.pkl")
+XGB = load_model("xgboost_model.pkl")
 GBC = load_model("gradient_boosting_model.pkl")
 
 models = {
     "Logistic Regression": LR,
-    "Decision Tree": DT,
+    "Extreme Gradient Bossting": XGB,
     "Gradient Boosting": GBC,
 }
-
 
 def wordopt(text):
     text = text.lower()
@@ -34,29 +32,6 @@ def wordopt(text):
     text = re.sub('[%s]' % re.escape(string.punctuation), '', text)
     text = re.sub(r'\w*\d\w*', '', text)
     text = re.sub(r'\s+', ' ', text).strip()
-    return text
-def rewrite_to_headline_style(text):
-    # Lowercase and basic cleanup
-    text = text.strip().lower()
-
-    # Remove filler words and personal pronouns
-    filler_words = [
-        "i think", "i believe", "in my opinion", "you know",
-        "this is like", "i'm just saying", "honestly", "literally"
-    ]
-    for phrase in filler_words:
-        text = text.replace(phrase, "")
-
-    # Remove leading personal pronouns
-    text = re.sub(r"^(i|you|we|they|he|she)\s+", "", text)
-
-    # Convert to simple news-style phrasing
-    text = text.replace("gonna", "going to").replace("wanna", "want to")
-    text = text.replace("kinda", "somewhat").replace("sorta", "somewhat")
-    
-    # Capitalize each word like a news headline
-    text = " ".join(word.capitalize() for word in text.split())
-
     return text
 
 def output_label(n):
@@ -99,6 +74,8 @@ def model_details():
             "-  Slower, but usually more accurate than single models"
         )
     }
+
+
     if model_choice == "All":
         for name, desc in descriptions.items():
             st.sidebar.markdown(f"**{name}**: {desc}")
@@ -110,26 +87,11 @@ def run_streamlit_app():
     model_details()
 
     headline = st.text_input("Enter a news headline:")
+
     if headline:
-        styled = rewrite_to_headline_style(headline)
-        processed = wordopt(styled)
-
-        st.markdown("#### 🧾 Original Headline")
-        st.code(headline)
-
-        st.markdown("#### 📰 Rewritten to Match Dataset Style")
-        st.code(styled)
-
-        st.markdown("#### 🧹 Final Cleaned Input for Model")
-        st.code(processed)
-
         with st.spinner("Analyzing..."):
+            processed = wordopt(headline)
             new_xv = vectorizer.transform([processed])
-        # ...rest of your model prediction logic
-
-
-            with st.spinner("Analyzing..."):
-                new_xv = vectorizer.transform([processed])
 
             predictions = []
             confidences = []
@@ -197,12 +159,5 @@ def manual_testing(news):
     print(f"Votes - Real: {real_count}, Fake: {fake_count}")
     print(f"Confidence: {confidence_percent}%")
 
-
 if __name__ == "__main__":
     run_streamlit_app()
-
-
-
-
-
-

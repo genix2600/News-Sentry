@@ -19,7 +19,7 @@ GBC = load_model("gradient_boosting_model.pkl")
 
 models = {
     "Logistic Regression": LR,
-    "Extreme Gradient Bossting": XGB,
+    "Extreme Gradient Boosting": XGB,
     "Gradient Boosting": GBC,
 }
 
@@ -57,15 +57,14 @@ def model_details():
             "-  Fast, lightweight, and often surprisingly accurate\n"
             "-  Like a **sharp memory** for word patterns"
         ),
-        "Decision Tree": (
-            "###  Decision Tree\n"
-            "-  Asks **yes/no questions**, like:\n"
-            "- 'Is the headline emotional?'\n"
-            "- 'Does it contain a number?'\n"
-            "-  Follows a decision **flowchart** based on the answers\n"
-            "-  Simple, visual, and easy to understand\n"
-            "-  Not always perfect — can be too confident with little info"
-        ),
+
+        "Extreme Gradient Boosting": (
+    "### Extreme Gradient Boosting (XGBoost)\n"
+    "- Advanced boosting algorithm optimized for speed and accuracy\n"
+    "- Handles complex patterns better than standard Gradient Boosting\n"
+    "- Often used in **Kaggle competitions** because of its performance"
+),
+
         "Gradient Boosting": (
             "###  Gradient Boosting\n"
             "-  Like a **team of students** solving a problem\n"

@@ -109,26 +109,26 @@ def run_streamlit_app():
     st.title("📰 Fake News Headline Classifier")
     model_details()
 
-headline = st.text_input("Enter a news headline:")
-if headline:
-    styled = rewrite_to_headline_style(headline)
-    processed = wordopt(styled)
+    headline = st.text_input("Enter a news headline:")
+    if headline:
+        styled = rewrite_to_headline_style(headline)
+        processed = wordopt(styled)
 
-    st.markdown("#### 🧾 Original Headline")
-    st.code(headline)
+        st.markdown("#### 🧾 Original Headline")
+        st.code(headline)
 
-    st.markdown("#### 📰 Rewritten to Match Dataset Style")
-    st.code(styled)
+        st.markdown("#### 📰 Rewritten to Match Dataset Style")
+        st.code(styled)
 
-    st.markdown("#### 🧹 Final Cleaned Input for Model")
-    st.code(processed)
+        st.markdown("#### 🧹 Final Cleaned Input for Model")
+        st.code(processed)
 
-    with st.spinner("Analyzing..."):
+        with st.spinner("Analyzing..."):
         new_xv = vectorizer.transform([processed])
         # ...rest of your model prediction logic
 
 
-        with st.spinner("Analyzing..."):
+            with st.spinner("Analyzing..."):
             new_xv = vectorizer.transform([processed])
 
             predictions = []
@@ -200,6 +200,7 @@ def manual_testing(news):
 
 if __name__ == "__main__":
     run_streamlit_app()
+
 
 
 

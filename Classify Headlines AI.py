@@ -58,7 +58,7 @@ def model_details():
             "-  Like a **sharp memory** for word patterns"
         ),
         "Decision Tree": (
-            "###  Decision Tree\n"
+            "Decision Tree\n"
             "-  Asks **yes/no questions**, like:\n"
             "- 'Is the headline emotional?'\n"
             "- 'Does it contain a number?'\n"
@@ -67,7 +67,7 @@ def model_details():
             "-  Not always perfect — can be too confident with little info"
         ),
         "Gradient Boosting": (
-            "###  Gradient Boosting\n"
+            "Gradient Boosting\n"
             "-  Like a **team of students** solving a problem\n"
             "-  Each model learns from the mistakes of the last\n"
             "-  Combines all learnings into a smart final decision\n"
@@ -160,4 +160,5 @@ def manual_testing(news):
     print(f"Confidence: {confidence_percent}%")
 
 if __name__ == "__main__":
+
     run_streamlit_app()

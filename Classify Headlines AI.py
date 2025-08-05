@@ -6,16 +6,13 @@ import streamlit as st
 import os
 import matplotlib.pyplot as plt
 
-# -------------------------------
-# Load models and vectorizer
-# -------------------------------
 @st.cache_resource
 def load_model(path):
     if not os.path.exists(path):
         st.error(f"Missing file: {path}")
         st.stop()
     return joblib.load(path)
-    
+
 vectorizer = load_model('vectorizer.pkl')
 LR = load_model("logistic_model.pkl")
 XGB = load_model("xgboost_model.pkl")
@@ -27,9 +24,6 @@ models = {
     "Gradient Boosting": GBC,
 }
 
-# -------------------------------
-# Text Cleaning Function
-# -------------------------------
 def wordopt(text):
     text = text.lower()
     text = re.sub(r'\[.*?\]', '', text)
@@ -41,9 +35,6 @@ def wordopt(text):
     text = re.sub(r'\s+', ' ', text).strip()
     return text
 
-# -------------------------------
-# Helper functions
-# -------------------------------
 def output_label(n):
     return "Probably not fake news" if n == 1 else "Probably fake news"
 
@@ -54,9 +45,6 @@ def get_explanation(prediction):
         "🔴 This headline shows common signs of fake news."
     )
 
-# -------------------------------
-# Sidebar Model Details
-# -------------------------------
 def model_details():
     st.sidebar.markdown("## 🧠 Model Descriptions")
     model_choice = st.sidebar.selectbox("Learn about a model:", ["All"] + list(models.keys()))
@@ -91,38 +79,44 @@ def model_details():
     else:
         st.sidebar.markdown(f"**{model_choice}**: {descriptions[model_choice]}")
 
-# -------------------------------
-# Confidence Bar Chart
-# -------------------------------
 def show_confidence_chart(confidences):
     st.subheader("📈 Confidence Comparison")
     model_names = [name for name, _ in confidences]
-    conf_values = [conf for _, conf in confidences]
+    conf_values = [conf for _, (_, conf) in confidences]
+
+    colors = ['#4CAF50' if pred == 1 else '#F44336' for _, (pred, _) in confidences]
 
     fig, ax = plt.subplots()
-    ax.barh(model_names, conf_values, color=['#4CAF50' if conf >= 50 else '#F44336' for conf in conf_values])
+    ax.barh(model_names, conf_values, color=colors)
     ax.set_xlabel("Confidence (%)")
     ax.set_xlim(0, 100)
+
     for i, v in enumerate(conf_values):
         ax.text(v + 1, i, f"{v}%", va='center')
+
     st.pyplot(fig)
 
-# -------------------------------
-# Main App
-# -------------------------------
 def run_streamlit_app():
     st.title("📰 Fake News Headline Classifier")
     st.markdown("Enter a news headline and let **three powerful ML models** analyze whether it's **Fake or Real**.")
     model_details()
 
-    # Preloaded Examples
     st.markdown("### Try an Example Headline:")
     example = st.selectbox(
         "Pick an example or type your own below:",
-        ["", "Breaking: US declares war on Mars", 
-         "NASA announces successful moon mission", 
-         "COVID-19 vaccines approved worldwide", 
-         "Aliens spotted at the White House"]
+        [
+            "",
+            "Breaking: US declares war on Mars",
+            "Aliens spotted at the White House",
+            "Elon Musk buys the moon for $1 trillion",
+            "World to end tomorrow, scientists confirm",
+            "Man claims he traveled through time to stop pandemic",
+            "NASA announces successful moon mission",
+            "COVID-19 vaccines approved worldwide",
+            "Apple unveils new iPhone with AI-powered features",
+            "Stock markets hit record highs after tech surge",
+            "WHO warns about new global health concerns"
+        ]
     )
 
     headline = st.text_input("Or enter your own headline:", value=example if example else "")
@@ -144,7 +138,7 @@ def run_streamlit_app():
                 confidence = round(max(proba) * 100, 2)
 
                 predictions.append(prediction)
-                confidences.append((name, confidence))
+                confidences.append((name, (prediction, confidence)))
 
                 color = "green" if prediction == 1 else "red"
                 st.markdown(f"**{name}:** :{color}[{label}]")
@@ -152,12 +146,10 @@ def run_streamlit_app():
                 st.markdown(f"Explanation: {get_explanation(prediction)}")
                 st.markdown("---")
 
-            # Show confidence chart
             show_confidence_chart(confidences)
 
-            # Tie-breaking based on summed confidence
-            real_conf = sum(conf for (name, conf), pred in zip(confidences, predictions) if pred == 1)
-            fake_conf = sum(conf for (name, conf), pred in zip(confidences, predictions) if pred == 0)
+            real_conf = sum(conf for (_, (pred, conf)) in confidences if pred == 1)
+            fake_conf = sum(conf for (_, (pred, conf)) in confidences if pred == 0)
             final_vote = 1 if real_conf >= fake_conf else 0
 
             final_label = output_label(final_vote)
@@ -166,13 +158,16 @@ def run_streamlit_app():
             confidence_percent = round(max(real_conf, fake_conf) / len(models), 2)
 
             st.subheader("✅ Final Verdict")
-            st.success(f"Prediction: {final_label}")
+
+            color = "green" if final_vote == 1 else "red"
+            st.markdown(
+                f"<h3 style='color:{color};'>Prediction: {final_label}</h3>",
+                unsafe_allow_html=True
+            )
+
             st.info(f"Model Votes — Real: {real_count}, Fake: {fake_count}")
             st.info(f"Overall Confidence: {confidence_percent}%")
 
-# -------------------------------
-# CLI Mode
-# -------------------------------
 def manual_testing(news):
     processed = wordopt(news)
     new_xv = vectorizer.transform([processed])
@@ -209,8 +204,5 @@ def manual_testing(news):
     print(f"Votes - Real: {real_count}, Fake: {fake_count}")
     print(f"Confidence: {confidence_percent}%")
 
-# -------------------------------
-# Run the app
-# -------------------------------
 if __name__ == "__main__":
     run_streamlit_app()

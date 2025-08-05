@@ -88,8 +88,12 @@ def run_streamlit_app():
 
     headline = st.text_input("Enter a news headline:")
     if headline:
+        processed = wordopt(headline)
+
+        st.markdown("Cleaned Headline")
+        st.code(processed, language="text")
+
         with st.spinner("Analyzing..."):
-            processed = wordopt(headline)
             new_xv = vectorizer.transform([processed])
 
             predictions = []
@@ -161,5 +165,6 @@ def manual_testing(news):
 
 if __name__ == "__main__":
     run_streamlit_app()
+
 
 

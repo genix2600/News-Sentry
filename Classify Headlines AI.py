@@ -160,7 +160,7 @@ def run_streamlit_app():
         ]
     )
 
-    headline = st.text_input("Or enter your own headline:", value=example if example else "")
+    headline = st.text_input("Enter your own headline:", value=example if example else "")
 
     if headline:
         with st.spinner("Analyzing..."):

@@ -50,7 +50,7 @@ def model_details():
 
     descriptions = {
         "Logistic Regression": (
-            "Logistic Regression\n"
+            "### Logistic Regression\n"
             "-  Works like a **smart calculator**\n"
             "-  Counts how often words appear in a headline\n"
             "-  Uses simple math to guess if it's real or fake\n"
@@ -58,7 +58,7 @@ def model_details():
             "-  Like a **sharp memory** for word patterns"
         ),
         "Decision Tree": (
-            "Decision Tree\n"
+            "###  Decision Tree\n"
             "-  Asks **yes/no questions**, like:\n"
             "- 'Is the headline emotional?'\n"
             "- 'Does it contain a number?'\n"
@@ -67,7 +67,7 @@ def model_details():
             "-  Not always perfect — can be too confident with little info"
         ),
         "Gradient Boosting": (
-            "Gradient Boosting\n"
+            "###  Gradient Boosting\n"
             "-  Like a **team of students** solving a problem\n"
             "-  Each model learns from the mistakes of the last\n"
             "-  Combines all learnings into a smart final decision\n"
@@ -131,7 +131,7 @@ def manual_testing(news):
 
     predictions = []
     confidences = []
-print(f"Prediction: {final_label}")
+
     for name, model in models.items():
         prediction = model.predict(new_xv)[0]
         proba = model.predict_proba(new_xv)[0]
@@ -154,12 +154,10 @@ print(f"Prediction: {final_label}")
     matching_conf = [conf for pred, conf in confidences if pred == final_vote]
     confidence_percent = round(sum(matching_conf) / len(matching_conf), 2) if matching_conf else 0.0
 
+    print("\nFinal Verdict")
     print(f"Prediction: {final_label}")
     print(f"Votes - Real: {real_count}, Fake: {fake_count}")
     print(f"Confidence: {confidence_percent}%")
 
 if __name__ == "__main__":
-
     run_streamlit_app()
-
-

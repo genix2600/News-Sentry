@@ -160,14 +160,4 @@ def manual_testing(news):
     print(f"Confidence: {confidence_percent}%")
 
 if __name__ == "__main__":
-    import sys
-    if "streamlit" in sys.argv[0].lower():
-        run_streamlit_app()
-    else:
-        while True:
-            news = input("\nEnter headline (or 'exit'): ").strip()
-            if news.lower() == "exit":
-                print("Exiting.")
-                break
-            else:
-                manual_testing(news)
+    run_streamlit_app()

@@ -85,7 +85,8 @@ def run_chat_ui():
     st.markdown("<h1 style='text-align: center;'>📰 Fake News Classifier Chat</h1>", unsafe_allow_html=True)
     st.markdown("<div class='chat-container'>", unsafe_allow_html=True)
 
-    headline = st.text_input("💬 You:", placeholder="Enter a news headline here...")
+    headline = st.text_input("💬 You:", placeholder="Enter a news headline here...", key="headline_input")
+
 
     if headline:
         st.markdown(f"<div class='chat-bubble user-msg'>{headline}</div>", unsafe_allow_html=True)
@@ -270,3 +271,4 @@ def run_chat_ui():
 # Run app
 if __name__ == "__main__":
     run_chat_ui()
+

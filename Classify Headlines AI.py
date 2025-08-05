@@ -131,7 +131,7 @@ def manual_testing(news):
 
     predictions = []
     confidences = []
-
+print(f"Prediction: {final_label}")
     for name, model in models.items():
         prediction = model.predict(new_xv)[0]
         proba = model.predict_proba(new_xv)[0]
@@ -154,7 +154,6 @@ def manual_testing(news):
     matching_conf = [conf for pred, conf in confidences if pred == final_vote]
     confidence_percent = round(sum(matching_conf) / len(matching_conf), 2) if matching_conf else 0.0
 
-    print("\nFinal Verdict")
     print(f"Prediction: {final_label}")
     print(f"Votes - Real: {real_count}, Fake: {fake_count}")
     print(f"Confidence: {confidence_percent}%")
@@ -162,4 +161,5 @@ def manual_testing(news):
 if __name__ == "__main__":
 
     run_streamlit_app()
+
 

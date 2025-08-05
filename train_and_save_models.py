@@ -5,7 +5,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
+from sklearn.ensemble import GradientBoostingClassifier
 import joblib
 
 data_fake = pd.read_csv("FAKE.csv")
@@ -42,17 +42,14 @@ xv_train = vectorizer.fit_transform(x_train)
 LR = LogisticRegression()
 DT = DecisionTreeClassifier()
 GB = GradientBoostingClassifier()
-RF = RandomForestClassifier()
 
 LR.fit(xv_train, y_train)
 DT.fit(xv_train, y_train)
 GB.fit(xv_train, y_train)
-RF.fit(xv_train, y_train)
 
-joblib.dump(RF, 'random_forest_model.pkl', compress=3)
-joblib.dump(LR, "logistic_model.pkl")
-joblib.dump(DT, 'decision_tree_model.pkl')
-joblib.dump(GB, 'gradient_boosting_model.pkl')
-joblib.dump(vectorizer, 'vectorizer.pkl')
+joblib.dump(LR, r"C:\Users\aarya\Dropbox\PC\Downloads\Classify Headlines AI\logistic_model.pkl")
+joblib.dump(DT, r'C:\Users\aarya\Dropbox\PC\Downloads\Classify Headlines AI\decision_tree_model.pkl')
+joblib.dump(GB, r'C:\Users\aarya\Dropbox\PC\Downloads\Classify Headlines AI\gradient_boosting_model.pkl')
+joblib.dump(vectorizer, r'C:\Users\aarya\Dropbox\PC\Downloads\Classify Headlines AI\vectorizer.pkl')
 
 print("Models trained and saved successfully.")

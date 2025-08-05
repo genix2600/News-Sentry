@@ -75,6 +75,7 @@ def model_details():
             "-  Combines all learnings into a smart final decision\n"
             "-  Slower, but usually more accurate than single models"
         )
+    }
     if model_choice == "All":
         for name, desc in descriptions.items():
             st.sidebar.markdown(f"**{name}**: {desc}")
@@ -160,4 +161,5 @@ def manual_testing(news):
 
 if __name__ == "__main__":
     run_streamlit_app()
+
 

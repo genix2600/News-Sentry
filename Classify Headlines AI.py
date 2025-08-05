@@ -75,161 +75,17 @@ def model_details():
             "-  Combines all learnings into a smart final decision\n"
             "-  Slower, but usually more accurate than single models"
         )
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     if model_choice == "All":
         for name, desc in descriptions.items():
             st.sidebar.markdown(f"**{name}**: {desc}")
     else:
         st.sidebar.markdown(f"**{model_choice}**: {descriptions[model_choice]}")
 
-
 def run_streamlit_app():
     st.title("📰 Fake News Headline Classifier")
     model_details()
 
     headline = st.text_input("Enter a news headline:")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     if headline:
         with st.spinner("Analyzing..."):
             processed = wordopt(headline)
@@ -304,3 +160,4 @@ def manual_testing(news):
 
 if __name__ == "__main__":
     run_streamlit_app()
+

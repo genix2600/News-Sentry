@@ -50,7 +50,7 @@ def model_details():
 
     descriptions = {
         "Logistic Regression": (
-            "### Logistic Regression\n"
+            "Logistic Regression\n"
             "-  Works like a **smart calculator**\n"
             "-  Counts how often words appear in a headline\n"
             "-  Uses simple math to guess if it's real or fake\n"
@@ -162,3 +162,4 @@ def manual_testing(news):
 if __name__ == "__main__":
 
     run_streamlit_app()
+

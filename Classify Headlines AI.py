@@ -1,11 +1,13 @@
 import joblib
-import pandas as pd
 import re
 import string
 import streamlit as st
 import os
 import matplotlib.pyplot as plt
 
+# -------------------------------
+# Load Models
+# -------------------------------
 @st.cache_resource
 def load_model(path):
     if not os.path.exists(path):
@@ -20,10 +22,13 @@ GBC = load_model("gradient_boosting_model.pkl")
 
 models = {
     "Logistic Regression": LR,
-    "Extreme Gradient Boosting": XGB,
+    "Extreme Gradient Boosting (XGBoost)": XGB,
     "Gradient Boosting": GBC,
 }
 
+# -------------------------------
+# Text Preprocessing
+# -------------------------------
 def wordopt(text):
     text = text.lower()
     text = re.sub(r'\[.*?\]', '', text)
@@ -45,6 +50,9 @@ def get_explanation(prediction):
         "🔴 This headline shows common signs of fake news."
     )
 
+# -------------------------------
+# Sidebar Model Descriptions
+# -------------------------------
 def model_details():
     st.sidebar.markdown("## 🧠 Model Descriptions")
     model_choice = st.sidebar.selectbox("Learn about a model:", ["All"] + list(models.keys()))
@@ -52,50 +60,57 @@ def model_details():
     descriptions = {
         "Logistic Regression": (
             "### Logistic Regression\n"
-            "- Works like a **smart calculator**\n"
-            "- Counts how often words appear in a headline\n"
-            "- Uses simple math to guess if it's real or fake\n"
-            "- Fast, lightweight, and often surprisingly accurate\n"
-            "- Like a **sharp memory** for word patterns"
+            "- **Type:** Linear Model\n"
+            "- **How it works:** Uses a weighted sum of input features (word frequencies) and applies a logistic function to estimate probabilities.\n"
+            "- **Strengths:** Simple, fast, interpretable, works well on linearly separable data.\n"
+            "- **Limitations:** Struggles with non-linear patterns.\n"
+            "- **Use case:** Great baseline for text classification like fake news detection."
         ),
-        "Extreme Gradient Boosting": (
+        "Extreme Gradient Boosting (XGBoost)": (
             "### Extreme Gradient Boosting (XGBoost)\n"
-            "- Advanced boosting algorithm optimized for speed and accuracy\n"
-            "- Handles complex patterns better than standard Gradient Boosting\n"
-            "- Often used in **Kaggle competitions** because of its performance"
+            "- **Type:** Advanced Ensemble Method\n"
+            "- **How it works:** Builds multiple decision trees sequentially. Each new tree focuses on correcting errors of previous trees.\n"
+            "- **Strengths:** Handles non-linear relationships, robust against overfitting, excellent accuracy.\n"
+            "- **Special Features:** Regularization, missing value handling, parallel computing.\n"
+            "- **Use case:** Common in Kaggle competitions and real-world high-performance tasks."
         ),
         "Gradient Boosting": (
-            "### Gradient Boosting\n"
-            "- Like a **team of students** solving a problem\n"
-            "- Each model learns from the mistakes of the last\n"
-            "- Combines all learnings into a smart final decision\n"
-            "- Slower, but usually more accurate than single models"
+            "### Gradient Boosting Classifier\n"
+            "- **Type:** Ensemble Method\n"
+            "- **How it works:** Similar to XGBoost but less optimized. Builds trees sequentially to minimize error using gradient descent.\n"
+            "- **Strengths:** Captures complex patterns better than single models.\n"
+            "- **Limitations:** Slower than XGBoost and prone to overfitting if not tuned.\n"
+            "- **Use case:** Suitable for datasets where relationships between words are non-linear."
         )
     }
 
     if model_choice == "All":
         for name, desc in descriptions.items():
-            st.sidebar.markdown(f"**{name}**: {desc}")
+            st.sidebar.markdown(f"**{name}**:\n\n{desc}\n\n")
     else:
-        st.sidebar.markdown(f"**{model_choice}**: {descriptions[model_choice]}")
+        st.sidebar.markdown(descriptions[model_choice])
 
+# -------------------------------
+# Confidence Chart
+# -------------------------------
 def show_confidence_chart(confidences):
     st.subheader("📈 Confidence Comparison")
     model_names = [name for name, _ in confidences]
     conf_values = [conf for _, (_, conf) in confidences]
-
     colors = ['#4CAF50' if pred == 1 else '#F44336' for _, (pred, _) in confidences]
 
     fig, ax = plt.subplots()
     ax.barh(model_names, conf_values, color=colors)
     ax.set_xlabel("Confidence (%)")
     ax.set_xlim(0, 100)
-
     for i, v in enumerate(conf_values):
         ax.text(v + 1, i, f"{v}%", va='center')
 
     st.pyplot(fig)
 
+# -------------------------------
+# Main Streamlit App
+# -------------------------------
 def run_streamlit_app():
     st.title("📰 Fake News Headline Classifier")
     st.markdown("Enter a news headline and let **three powerful ML models** analyze whether it's **Fake or Real**.")
@@ -167,42 +182,6 @@ def run_streamlit_app():
 
             st.info(f"Model Votes — Real: {real_count}, Fake: {fake_count}")
             st.info(f"Overall Confidence: {confidence_percent}%")
-
-def manual_testing(news):
-    processed = wordopt(news)
-    new_xv = vectorizer.transform([processed])
-
-    predictions = []
-    confidences = []
-
-    for name, model in models.items():
-        prediction = model.predict(new_xv)[0]
-        proba = model.predict_proba(new_xv)[0]
-        label = output_label(prediction)
-        confidence = round(max(proba) * 100, 2)
-        explanation = get_explanation(prediction)
-
-        predictions.append(prediction)
-        confidences.append((name, confidence))
-
-        print(f"\n{name}")
-        print(f"Prediction:  {label}")
-        print(f"Confidence:  {confidence}%")
-        print(f"Explanation: {explanation}")
-
-    real_conf = sum(conf for (name, conf), pred in zip(confidences, predictions) if pred == 1)
-    fake_conf = sum(conf for (name, conf), pred in zip(confidences, predictions) if pred == 0)
-    final_vote = 1 if real_conf >= fake_conf else 0
-
-    final_label = output_label(final_vote)
-    real_count = predictions.count(1)
-    fake_count = predictions.count(0)
-    confidence_percent = round(max(real_conf, fake_conf) / len(models), 2)
-
-    print("\nFinal Verdict")
-    print(f"Prediction: {final_label}")
-    print(f"Votes - Real: {real_count}, Fake: {fake_count}")
-    print(f"Confidence: {confidence_percent}%")
 
 if __name__ == "__main__":
     run_streamlit_app()

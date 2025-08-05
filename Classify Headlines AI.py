@@ -12,10 +12,10 @@ def load_model(path):
         st.stop()
     return joblib.load(path)
     
-vectorizer = load_model(r"C:\Users\aarya\Dropbox\PC\Downloads\Classify Headlines AI\vectorizer.pkl")
-LR = load_model(r"C:\Users\aarya\Dropbox\PC\Downloads\Classify Headlines AI\logistic_model.pkl")
-DT = load_model(r"C:\Users\aarya\Dropbox\PC\Downloads\Classify Headlines AI\decision_tree_model.pkl")
-GBC = load_model(r"C:\Users\aarya\Dropbox\PC\Downloads\Classify Headlines AI\gradient_boosting_model.pkl")
+vectorizer = load_model('vectorizer.pkl')
+LR = load_model("logistic_model.pkl")
+DT = load_model("decision_tree_model.pkl")
+GBC = load_model("gradient_boosting_model.pkl")
 
 models = {
     "Logistic Regression": LR,

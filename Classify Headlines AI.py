@@ -19,11 +19,19 @@ vectorizer = load_model('vectorizer.pkl')
 LR = load_model("logistic_model.pkl")
 XGB = load_model("xgboost_model.pkl")
 GBC = load_model("gradient_boosting_model.pkl")
+PAC = load_model("passive_aggressive_model.pkl")
+SVM = load_model("svm_model.pkl")
+NB = load_model("naive_bayes_model.pkl")
+VOTING = load_model("voting_model.pkl")
 
 models = {
     "Logistic Regression": LR,
-    "Extreme Gradient Boosting (XGBoost)": XGB,
     "Gradient Boosting": GBC,
+    "Extreme Gradient Boosting (XGBoost)": XGB,
+    "Passive Aggressive Classifier": PAC,
+    "Linear SVM": SVM,
+    "Naive Bayes": NB,
+    "Voting Classifier (Soft)": VOTING
 }
 
 # -------------------------------
@@ -61,26 +69,51 @@ def model_details():
         "Logistic Regression": (
             "### Logistic Regression\n"
             "- **Type:** Linear Model\n"
-            "- **How it works:** Uses a weighted sum of input features (word frequencies) and applies a logistic function to estimate probabilities.\n"
-            "- **Strengths:** Simple, fast, interpretable, works well on linearly separable data.\n"
-            "- **Limitations:** Struggles with non-linear patterns.\n"
-            "- **Use case:** Great baseline for text classification like fake news detection."
+            "- **How it works:** Calculates weighted sum of features and applies a logistic function for probability.\n"
+            "- **Strengths:** Simple, interpretable, fast.\n"
+            "- **Limitations:** Struggles with non-linear patterns."
+        ),
+        "Gradient Boosting": (
+            "### Gradient Boosting\n"
+            "- **Type:** Ensemble Method\n"
+            "- **How it works:** Builds trees sequentially to correct previous errors.\n"
+            "- **Strengths:** Handles complex relationships.\n"
+            "- **Limitations:** Slower and needs tuning."
         ),
         "Extreme Gradient Boosting (XGBoost)": (
             "### Extreme Gradient Boosting (XGBoost)\n"
             "- **Type:** Advanced Ensemble Method\n"
-            "- **How it works:** Builds multiple decision trees sequentially. Each new tree focuses on correcting errors of previous trees.\n"
-            "- **Strengths:** Handles non-linear relationships, robust against overfitting, excellent accuracy.\n"
-            "- **Special Features:** Regularization, missing value handling, parallel computing.\n"
-            "- **Use case:** Common in Kaggle competitions and real-world high-performance tasks."
+            "- **How it works:** Optimized gradient boosting with regularization and parallelism.\n"
+            "- **Strengths:** High accuracy, handles missing values.\n"
+            "- **Use case:** Popular in Kaggle competitions."
         ),
-        "Gradient Boosting": (
-            "### Gradient Boosting Classifier\n"
+        "Passive Aggressive Classifier": (
+            "### Passive Aggressive Classifier\n"
+            "- **Type:** Online Learning Algorithm\n"
+            "- **How it works:** Updates weights only when prediction is wrong (aggressive) or correct (passive).\n"
+            "- **Strengths:** Fast for large-scale text data.\n"
+            "- **Limitations:** Sensitive to outliers."
+        ),
+        "Linear SVM": (
+            "### Linear Support Vector Machine\n"
+            "- **Type:** Linear Classifier\n"
+            "- **How it works:** Finds a hyperplane that separates classes with max margin.\n"
+            "- **Strengths:** Excellent for high-dimensional text data.\n"
+            "- **Limitations:** Harder to interpret."
+        ),
+        "Naive Bayes": (
+            "### Naive Bayes Classifier\n"
+            "- **Type:** Probabilistic Classifier\n"
+            "- **How it works:** Applies Bayes' theorem with independence assumption.\n"
+            "- **Strengths:** Extremely fast and efficient for text.\n"
+            "- **Limitations:** Assumes independence between words."
+        ),
+        "Voting Classifier (Soft)": (
+            "### Voting Classifier (Soft)\n"
             "- **Type:** Ensemble Method\n"
-            "- **How it works:** Similar to XGBoost but less optimized. Builds trees sequentially to minimize error using gradient descent.\n"
-            "- **Strengths:** Captures complex patterns better than single models.\n"
-            "- **Limitations:** Slower than XGBoost and prone to overfitting if not tuned.\n"
-            "- **Use case:** Suitable for datasets where relationships between words are non-linear."
+            "- **How it works:** Combines predictions of multiple models by averaging probabilities.\n"
+            "- **Strengths:** Often more stable and accurate.\n"
+            "- **Use case:** Best when individual models perform differently."
         )
     }
 
@@ -113,7 +146,7 @@ def show_confidence_chart(confidences):
 # -------------------------------
 def run_streamlit_app():
     st.title("📰 Fake News Headline Classifier")
-    st.markdown("Enter a news headline and let **three powerful ML models** analyze whether it's **Fake or Real**.")
+    st.markdown("Enter a news headline and let **seven powerful ML models** analyze whether it's **Fake or Real**.")
     model_details()
 
     st.markdown("### Try an Example Headline:")
@@ -148,9 +181,12 @@ def run_streamlit_app():
 
             for name, model in models.items():
                 prediction = model.predict(new_xv)[0]
-                proba = model.predict_proba(new_xv)[0]
+                if hasattr(model, "predict_proba"):
+                    proba = model.predict_proba(new_xv)[0]
+                    confidence = round(max(proba) * 100, 2)
+                else:
+                    confidence = 50.0  # Approx for models without proba
                 label = output_label(prediction)
-                confidence = round(max(proba) * 100, 2)
 
                 predictions.append(prediction)
                 confidences.append((name, (prediction, confidence)))

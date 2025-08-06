@@ -140,7 +140,7 @@ def show_confidence_chart(confidences):
 # Main Streamlit App
 # -------------------------------
 def run_streamlit_app():
-    st.title("📰 Fake News Headline Classifier")
+    st.title("📰News Sentry")
     st.markdown("Enter a news headline and let **six powerful ML models** analyze whether it's **Fake or Real**.")
     model_details()
 
@@ -216,3 +216,4 @@ def run_streamlit_app():
 
 if __name__ == "__main__":
     run_streamlit_app()
+

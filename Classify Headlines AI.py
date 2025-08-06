@@ -5,6 +5,9 @@ import streamlit as st
 import os
 import matplotlib.pyplot as plt
 
+# -------------------------------
+# Load Models
+# -------------------------------
 @st.cache_resource
 def load_model(path):
     if not os.path.exists(path):
@@ -15,7 +18,6 @@ def load_model(path):
 vectorizer = load_model('vectorizer.pkl')
 LR = load_model("logistic_model.pkl")
 XGB = load_model("xgboost_model.pkl")
-GBC = load_model("gradient_boosting_model.pkl")
 PAC = load_model("passive_aggressive_model.pkl")
 SVM = load_model("svm_model.pkl")
 NB = load_model("naive_bayes_model.pkl")
@@ -23,7 +25,6 @@ VOTING = load_model("voting_model.pkl")
 
 models = {
     "Logistic Regression": LR,
-    "Gradient Boosting": GBC,
     "Extreme Gradient Boosting (XGBoost)": XGB,
     "Passive Aggressive Classifier": PAC,
     "Linear SVM": SVM,
@@ -31,6 +32,9 @@ models = {
     "Voting Classifier (Soft)": VOTING
 }
 
+# -------------------------------
+# Text Preprocessing
+# -------------------------------
 def wordopt(text):
     text = text.lower()
     text = re.sub(r'\[.*?\]', '', text)
@@ -52,6 +56,9 @@ def get_explanation(prediction):
         "🔴 This headline shows common signs of fake news."
     )
 
+# -------------------------------
+# Sidebar Model Descriptions
+# -------------------------------
 def model_details():
     st.sidebar.markdown("## 🧠 Model Descriptions")
     model_choice = st.sidebar.selectbox("Learn about a model:", ["All"] + list(models.keys()))
@@ -62,12 +69,6 @@ def model_details():
             "- **How it works:** Calculates weighted sum of features and applies a logistic function for probability.\n"
             "- **Strengths:** Simple, interpretable, fast.\n"
             "- **Limitations:** Struggles with non-linear patterns."
-        ),
-        "Gradient Boosting": (
-            "- **Type:** Ensemble Method\n"
-            "- **How it works:** Builds trees sequentially to correct previous errors.\n"
-            "- **Strengths:** Handles complex relationships.\n"
-            "- **Limitations:** Slower and needs tuning."
         ),
         "Extreme Gradient Boosting (XGBoost)": (
             "- **Type:** Advanced Ensemble Method\n"
@@ -107,24 +108,40 @@ def model_details():
     else:
         st.sidebar.markdown(descriptions[model_choice])
 
+# -------------------------------
+# Confidence Chart (Dark Mode)
+# -------------------------------
 def show_confidence_chart(confidences):
     st.subheader("📈 Confidence Comparison")
     model_names = [name for name, _ in confidences]
-    conf_values = [conf for _, (_, conf) in confidences]
+    conf_values = [round(conf, 2) for _, (_, conf) in confidences]
     colors = ['#4CAF50' if pred == 1 else '#F44336' for _, (pred, _) in confidences]
 
+    plt.style.use('dark_background')
     fig, ax = plt.subplots()
-    ax.barh(model_names, conf_values, color=colors)
-    ax.set_xlabel("Confidence (%)")
+    fig.patch.set_facecolor('#0e1117')
+    ax.set_facecolor('#0e1117')
+
+    bars = ax.barh(model_names, conf_values, color=colors)
+    ax.set_xlabel("Confidence (%)", color='white')
     ax.set_xlim(0, 100)
+    ax.tick_params(colors='white')
+    ax.spines['bottom'].set_color('white')
+    ax.spines['left'].set_color('white')
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+
     for i, v in enumerate(conf_values):
-        ax.text(v + 1, i, f"{v}%", va='center')
+        ax.text(v + 1, i, f"{v:.2f}%", va='center', color='white')
 
     st.pyplot(fig)
 
+# -------------------------------
+# Main Streamlit App
+# -------------------------------
 def run_streamlit_app():
     st.title("📰 Fake News Headline Classifier")
-    st.markdown("Enter a news headline and let **seven powerful ML models** analyze whether it's **Fake or Real**.")
+    st.markdown("Enter a news headline and let **six powerful ML models** analyze whether it's **Fake or Real**.")
     model_details()
 
     st.markdown("### Try an Example Headline:")
@@ -163,7 +180,7 @@ def run_streamlit_app():
                     proba = model.predict_proba(new_xv)[0]
                     confidence = round(max(proba) * 100, 2)
                 else:
-                    confidence = 50.0  
+                    confidence = 50.0  # For models without probability
                 label = output_label(prediction)
 
                 predictions.append(prediction)
@@ -171,7 +188,7 @@ def run_streamlit_app():
 
                 color = "green" if prediction == 1 else "red"
                 st.markdown(f"**{name}:** :{color}[{label}]")
-                st.markdown(f"Confidence: `{confidence}%`")
+                st.markdown(f"Confidence: `{confidence:.2f}%`")
                 st.markdown(f"Explanation: {get_explanation(prediction)}")
                 st.markdown("---")
 
@@ -195,7 +212,7 @@ def run_streamlit_app():
             )
 
             st.info(f"Model Votes — Real: {real_count}, Fake: {fake_count}")
-            st.info(f"Overall Confidence: {confidence_percent}%")
+            st.info(f"Overall Confidence: {confidence_percent:.2f}%")
 
 if __name__ == "__main__":
     run_streamlit_app()

@@ -1,216 +1,123 @@
-import joblib
+import pandas as pd
 import re
 import string
-import streamlit as st
-import os
+import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression, PassiveAggressiveClassifier
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.svm import LinearSVC
+from sklearn.ensemble import VotingClassifier
+from xgboost import XGBClassifier
+from sklearn.metrics import accuracy_score
+import joblib
 
-# -------------------------------
-# Load Models
-# -------------------------------
-@st.cache_resource
-def load_model(path):
-    if not os.path.exists(path):
-        st.error(f"Missing file: {path}")
-        st.stop()
-    return joblib.load(path)
+data_fake = pd.read_csv("FAKE.csv")
+data_true = pd.read_csv("REAL.csv")
+data_fake["class"] = 0
+data_true["class"] = 1
+data_fake.drop(data_fake.tail(10).index, inplace=True)
+data_true.drop(data_true.tail(10).index, inplace=True)
+data_merge = pd.concat([data_fake, data_true], axis=0)
+data = data_merge[['title', 'class']].sample(frac=1).reset_index(drop=True)
 
-vectorizer = load_model('vectorizer.pkl')
-LR = load_model("logistic_model.pkl")
-XGB = load_model("xgboost_model.pkl")
-GBC = load_model("gradient_boosting_model.pkl")
-PAC = load_model("passive_aggressive_model.pkl")
-SVM = load_model("svm_model.pkl")
-NB = load_model("naive_bayes_model.pkl")
-VOTING = load_model("voting_model.pkl")
-
-models = {
-    "Logistic Regression": LR,
-    "Gradient Boosting": GBC,
-    "Extreme Gradient Boosting (XGBoost)": XGB,
-    "Passive Aggressive Classifier": PAC,
-    "Linear SVM": SVM,
-    "Naive Bayes": NB,
-    "Voting Classifier (Soft)": VOTING
-}
-
-# -------------------------------
-# Text Preprocessing
-# -------------------------------
-def wordopt(text):
+def clean_text(text):
     text = text.lower()
-    text = re.sub(r'\[.*?\]', '', text)
-    text = re.sub(r'\W', ' ', text)
-    text = re.sub(r'https?://\S+|www\.\S+', '', text)
-    text = re.sub(r'<.*?>+', '', text)
+    text = re.sub('\[.*?\]', '', text)
+    text = re.sub("\\W", " ", text)
+    text = re.sub('https?://\S+|www\.\S+', '', text)
+    text = re.sub('<.*?>+', '', text)
     text = re.sub('[%s]' % re.escape(string.punctuation), '', text)
-    text = re.sub(r'\w*\d\w*', '', text)
-    text = re.sub(r'\s+', ' ', text).strip()
+    text = re.sub('\w*\d\w*', '', text)
     return text
 
-def output_label(n):
-    return "Probably not fake news" if n == 1 else "Probably fake news"
+data['title'] = data['title'].apply(clean_text)
 
-def get_explanation(prediction):
-    return (
-        "🟢 This headline resembles real news patterns."
-        if prediction == 1 else
-        "🔴 This headline shows common signs of fake news."
-    )
+model_names = [
+    "Logistic Regression", "XGBoost",
+    "Passive Aggressive", "Linear SVM", "Naive Bayes", "Voting Classifier (Soft)"
+]
+accuracies = {name: [] for name in model_names}
 
-# -------------------------------
-# Sidebar Model Descriptions
-# -------------------------------
-def model_details():
-    st.sidebar.markdown("## 🧠 Model Descriptions")
-    model_choice = st.sidebar.selectbox("Learn about a model:", ["All"] + list(models.keys()))
+for i in range(9):
+    print(f"\nIteration {i + 1}/9")
+    
+    x = data['title']
+    y = data['class']
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.25, random_state=i)
+    
+    vectorizer = TfidfVectorizer(max_features=20000, ngram_range=(1, 2))
+    xv_train = vectorizer.fit_transform(x_train)
+    xv_test = vectorizer.transform(x_test)
 
-    descriptions = {
-        "Logistic Regression": (
-            "- **Type:** Linear Model\n"
-            "- **How it works:** Calculates weighted sum of features and applies a logistic function for probability.\n"
-            "- **Strengths:** Simple, interpretable, fast.\n"
-            "- **Limitations:** Struggles with non-linear patterns."
-        ),
-        "Gradient Boosting": (
-            "- **Type:** Ensemble Method\n"
-            "- **How it works:** Builds trees sequentially to correct previous errors.\n"
-            "- **Strengths:** Handles complex relationships.\n"
-            "- **Limitations:** Slower and needs tuning."
-        ),
-        "Extreme Gradient Boosting (XGBoost)": (
-            "- **Type:** Advanced Ensemble Method\n"
-            "- **How it works:** Optimized gradient boosting with regularization and parallelism.\n"
-            "- **Strengths:** High accuracy, handles missing values.\n"
-            "- **Use case:** Popular in Kaggle competitions."
-        ),
-        "Passive Aggressive Classifier": (
-            "- **Type:** Online Learning Algorithm\n"
-            "- **How it works:** Updates weights only when prediction is wrong (aggressive) or correct (passive).\n"
-            "- **Strengths:** Fast for large-scale text data.\n"
-            "- **Limitations:** Sensitive to outliers."
-        ),
-        "Linear SVM": (
-            "- **Type:** Linear Classifier\n"
-            "- **How it works:** Finds a hyperplane that separates classes with max margin.\n"
-            "- **Strengths:** Excellent for high-dimensional text data.\n"
-            "- **Limitations:** Harder to interpret."
-        ),
-        "Naive Bayes": (
-            "- **Type:** Probabilistic Classifier\n"
-            "- **How it works:** Applies Bayes' theorem with independence assumption.\n"
-            "- **Strengths:** Extremely fast and efficient for text.\n"
-            "- **Limitations:** Assumes independence between words."
-        ),
-        "Voting Classifier (Soft)": (
-            "- **Type:** Ensemble Method\n"
-            "- **How it works:** Combines predictions of multiple models by averaging probabilities.\n"
-            "- **Strengths:** Often more stable and accurate.\n"
-            "- **Use case:** Best when individual models perform differently."
-        )
+    LR = LogisticRegression(max_iter=3000)
+    XGB = XGBClassifier(use_label_encoder=False, eval_metric='logloss')
+    PAC = PassiveAggressiveClassifier(max_iter=2000)
+    SVM = LinearSVC()
+    NB = MultinomialNB()
+
+    LR.fit(xv_train, y_train)
+    XGB.fit(xv_train, y_train)
+    PAC.fit(xv_train, y_train)
+    SVM.fit(xv_train, y_train)
+    NB.fit(xv_train, y_train)
+
+    voting_soft = VotingClassifier(estimators=[
+        ('lr', LR), ('xgb', XGB), ('nb', NB)
+    ], voting='soft')
+    voting_soft.fit(xv_train, y_train)
+
+    models = {
+        "Logistic Regression": LR,
+        "XGBoost": XGB,
+        "Passive Aggressive": PAC,
+        "Linear SVM": SVM,
+        "Naive Bayes": NB,
+        "Voting Classifier (Soft)": voting_soft
     }
 
-    if model_choice == "All":
-        for name, desc in descriptions.items():
-            st.sidebar.markdown(f"**{name}**:\n\n{desc}\n\n")
-    else:
-        st.sidebar.markdown(descriptions[model_choice])
+    for name, model in models.items():
+        pred = model.predict(xv_test)
+        acc = accuracy_score(y_test, pred)
+        accuracies[name].append(acc)
 
-# -------------------------------
-# Confidence Chart
-# -------------------------------
-def show_confidence_chart(confidences):
-    st.subheader("📈 Confidence Comparison")
-    model_names = [name for name, _ in confidences]
-    conf_values = [conf for _, (_, conf) in confidences]
-    colors = ['#4CAF50' if pred == 1 else '#F44336' for _, (pred, _) in confidences]
+print("\nAverage Accuracy over 9 iterations:")
+avg_accuracies = {}
+for name in model_names:
+    avg = np.mean(accuracies[name])
+    avg_accuracies[name] = round(avg * 100, 2)
+    print(f"{name:30}: {avg_accuracies[name]}%")
 
-    fig, ax = plt.subplots()
-    ax.barh(model_names, conf_values, color=colors)
-    ax.set_xlabel("Confidence (%)")
-    ax.set_xlim(0, 100)
-    for i, v in enumerate(conf_values):
-        ax.text(v + 1, i, f"{v}%", va='center')
+plt.style.use('dark_background')
+fig, ax = plt.subplots()
+ax.bar(avg_accuracies.keys(), avg_accuracies.values())
+ax.set_title("Average Accuracy over 9 Iterations", fontsize=14)
+ax.set_ylabel("Accuracy (%)")
+plt.xticks(rotation=30, ha='right')
+plt.tight_layout()
+plt.show()
 
-    st.pyplot(fig)
+print("\nSaving final models trained on full dataset...")
 
-# -------------------------------
-# Main Streamlit App
-# -------------------------------
-def run_streamlit_app():
-    st.title("📰 Fake News Headline Classifier")
-    st.markdown("Enter a news headline and let **seven powerful ML models** analyze whether it's **Fake or Real**.")
-    model_details()
+x = data['title']
+y = data['class']
+vectorizer = TfidfVectorizer(max_features=20000, ngram_range=(1, 2))
+xv = vectorizer.fit_transform(x)
 
-    st.markdown("### Try an Example Headline:")
-    example = st.selectbox(
-        "Pick an example or type your own below:",
-        [
-            "",
-            "Breaking: US declares war on Mars",
-            "Aliens spotted at the White House",
-            "Elon Musk buys the moon for $1 trillion",
-            "The world will end day after tomorrow",
-            "Man claims he traveled through time to stop pandemic",
-            "NASA announces successful moon mission",
-            "COVID-19 vaccines approved worldwide",
-            "Apple unveils new iPhone with AI-powered features",
-            "Stock markets hit record highs after tech surge",
-            "WHO warns about new global health concerns"
-        ]
-    )
+LR.fit(xv, y)
+XGB.fit(xv, y)
+PAC.fit(xv, y)
+SVM.fit(xv, y)
+NB.fit(xv, y)
+voting_soft.fit(xv, y)
 
-    headline = st.text_input("Enter your own headline:", value=example if example else "")
+joblib.dump(LR, 'logistic_model.pkl')
+joblib.dump(XGB, 'xgboost_model.pkl')
+joblib.dump(PAC, 'passive_aggressive_model.pkl')
+joblib.dump(SVM, 'svm_model.pkl')
+joblib.dump(NB, 'naive_bayes_model.pkl')
+joblib.dump(voting_soft, 'voting_model.pkl')
+joblib.dump(vectorizer, 'vectorizer.pkl')
 
-    if headline:
-        with st.spinner("Analyzing..."):
-            processed = wordopt(headline)
-            new_xv = vectorizer.transform([processed])
-
-            predictions = []
-            confidences = []
-
-            st.subheader("📊 Model Predictions")
-
-            for name, model in models.items():
-                prediction = model.predict(new_xv)[0]
-                if hasattr(model, "predict_proba"):
-                    proba = model.predict_proba(new_xv)[0]
-                    confidence = round(max(proba) * 100, 2)
-                else:
-                    confidence = 50.0  # Approx for models without proba
-                label = output_label(prediction)
-
-                predictions.append(prediction)
-                confidences.append((name, (prediction, confidence)))
-
-                color = "green" if prediction == 1 else "red"
-                st.markdown(f"**{name}:** :{color}[{label}]")
-                st.markdown(f"Confidence: `{confidence}%`")
-                st.markdown(f"Explanation: {get_explanation(prediction)}")
-                st.markdown("---")
-
-            show_confidence_chart(confidences)
-
-            real_conf = sum(conf for (_, (pred, conf)) in confidences if pred == 1)
-            fake_conf = sum(conf for (_, (pred, conf)) in confidences if pred == 0)
-            final_vote = 1 if real_conf >= fake_conf else 0
-
-            final_label = output_label(final_vote)
-            real_count = predictions.count(1)
-            fake_count = predictions.count(0)
-            confidence_percent = round(max(real_conf, fake_conf) / len(models), 2)
-
-            st.subheader("✅ Final Verdict")
-
-            color = "green" if final_vote == 1 else "red"
-            st.markdown(
-                f"<h3 style='color:{color};'>Prediction: {final_label}</h3>",
-                unsafe_allow_html=True
-            )
-
-            st.info(f"Model Votes — Real: {real_count}, Fake: {fake_count}")
-            st.info(f"Overall Confidence: {confidence_percent}%")
-
-if __name__ == "__main__":
-    run_streamlit_app()
+print("Models trained on full dataset and saved successfully.")

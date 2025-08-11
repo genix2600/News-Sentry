@@ -60,13 +60,42 @@ def model_details():
     model_choice = st.sidebar.selectbox("Learn about a model:", ["All"] + list(models.keys()))
 
     descriptions = {
-        "Logistic Regression": "- **Type:** Linear Model\n- **Strengths:** Simple, interpretable, fast.",
-        "Gradient Boosting": "- **Type:** Ensemble Method\n- **Strengths:** Handles complex relationships.",
-        "Extreme Gradient Boosting (XGBoost)": "- **Type:** Advanced Ensemble Method\n- **Strengths:** High accuracy.",
-        "Passive Aggressive Classifier": "- **Type:** Online Learning\n- **Strengths:** Fast for large text data.",
-        "Linear SVM": "- **Type:** Linear Classifier\n- **Strengths:** Excellent for high-dimensional text data.",
-        "Naive Bayes": "- **Type:** Probabilistic Classifier\n- **Strengths:** Extremely fast and efficient.",
-        "Voting Classifier (Soft)": "- **Type:** Ensemble Method\n- **Strengths:** Stable and accurate."
+        "Logistic Regression": (
+            "- **Type:** Linear Model\n"
+            "- **How it works:** Calculates weighted sum of features and applies a logistic function for probability.\n"
+            "- **Strengths:** Simple, interpretable, fast.\n"
+            "- **Limitations:** Struggles with non-linear patterns."
+        ),
+        "Extreme Gradient Boosting (XGBoost)": (
+            "- **Type:** Advanced Ensemble Method\n"
+            "- **How it works:** Optimized gradient boosting with regularization and parallelism.\n"
+            "- **Strengths:** High accuracy, handles missing values.\n"
+            "- **Use case:** Popular in Kaggle competitions."
+        ),
+        "Passive Aggressive Classifier": (
+            "- **Type:** Online Learning Algorithm\n"
+            "- **How it works:** Updates weights only when prediction is wrong (aggressive) or correct (passive).\n"
+            "- **Strengths:** Fast for large-scale text data.\n"
+            "- **Limitations:** Sensitive to outliers."
+        ),
+        "Linear SVM": (
+            "- **Type:** Linear Classifier\n"
+            "- **How it works:** Finds a hyperplane that separates classes with max margin.\n"
+            "- **Strengths:** Excellent for high-dimensional text data.\n"
+            "- **Limitations:** Harder to interpret."
+        ),
+        "Naive Bayes": (
+            "- **Type:** Probabilistic Classifier\n"
+            "- **How it works:** Applies Bayes' theorem with independence assumption.\n"
+            "- **Strengths:** Extremely fast and efficient for text.\n"
+            "- **Limitations:** Assumes independence between words."
+        ),
+        "Voting Classifier (Soft)": (
+            "- **Type:** Ensemble Method\n"
+            "- **How it works:** Combines predictions of multiple models by averaging probabilities.\n"
+            "- **Strengths:** Often more stable and accurate.\n"
+            "- **Use case:** Best when individual models perform differently."
+        )
     }
 
     if model_choice == "All":
@@ -142,20 +171,29 @@ def show_confidence_chart(confidences):
     for i, v in enumerate(conf_values):
         ax.text(v + 1, i, f"{v}%", va='center')
     st.pyplot(fig)
-
 def run_streamlit_app():
     st.title("📰 News Sentry")
     model_details()
 
-    with st.expander(" Show Dataset Visualisation"):
+    with st.expander("📊 Show Dataset Visualisation"):
         dataset_visualisation()
 
     st.markdown("### Try an Example Headline:")
     example = st.selectbox(
         "Pick an example or type your own below:",
-        ["", "Breaking: US declares war on Mars", 
-         "Aliens spotted at the White House", 
-         "NASA announces successful moon mission"]
+        [
+            "",
+            "Breaking: US declares war on Mars",
+            "Aliens spotted at the White House",
+            "Elon Musk buys the moon for $1 trillion",
+            "The world will end day after tomorrow",
+            "Man claims he traveled through time to stop pandemic",
+            "NASA announces successful moon mission",
+            "COVID-19 vaccines approved worldwide",
+            "Apple unveils new iPhone with AI-powered features",
+            "Stock markets hit record highs after tech surge",
+            "WHO warns about new global health concerns"
+        ]
     )
 
     headline = st.text_input("Enter your own headline:", value=example if example else "")
@@ -182,14 +220,24 @@ def run_streamlit_app():
                 st.markdown(f"Explanation: {get_explanation(prediction)}")
                 st.markdown("---")
 
+            # Confidence chart
             show_confidence_chart(confidences)
+
+            # Final verdict
             real_conf = sum(conf for (_, (pred, conf)) in confidences if pred == 1)
             fake_conf = sum(conf for (_, (pred, conf)) in confidences if pred == 0)
             final_vote = 1 if real_conf >= fake_conf else 0
-            st.subheader("✅ Final Verdict")
+            final_label = output_label(final_vote)
+            real_count = predictions.count(1)
+            fake_count = predictions.count(0)
+            confidence_percent = round(max(real_conf, fake_conf) / len(models), 2)
             color = "green" if final_vote == 1 else "red"
-            st.markdown(f"<h3 style='color:{color};'>Prediction: {output_label(final_vote)}</h3>", unsafe_allow_html=True)
-            st.info(f"Model Votes — Real: {predictions.count(1)}, Fake: {predictions.count(0)}")
+
+            st.subheader("✅ Final Verdict")
+            st.markdown(f"<h3 style='color:{color};'>Prediction: {final_label}</h3>", unsafe_allow_html=True)
+            st.info(f"Model Votes — Real: {real_count}, Fake: {fake_count}")
+            st.info(f"Overall Confidence: {confidence_percent:.2f}%")
+
 
 if __name__ == "__main__":
     run_streamlit_app()

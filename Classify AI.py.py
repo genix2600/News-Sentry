@@ -55,6 +55,7 @@ def get_explanation(prediction):
         "🔴 This headline shows common signs of fake news."
     )
 
+# ----------------- Model Info -----------------
 def model_details():
     st.sidebar.markdown("## 🧠 Model Descriptions")
     model_choice = st.sidebar.selectbox("Learn about a model:", ["All"] + list(models.keys()))
@@ -75,9 +76,11 @@ def model_details():
     else:
         st.sidebar.markdown(descriptions[model_choice])
 
+# ----------------- Visualisation -----------------
 def dataset_visualisation():
     st.header("📊 Dataset & Visualisation")
 
+    # Load dataset
     if not os.path.exists("FAKE.csv") or not os.path.exists("REAL.csv"):
         st.error("FAKE.csv and REAL.csv not found.")
         return
@@ -88,6 +91,7 @@ def dataset_visualisation():
     real_df["class"] = 1
     df = pd.concat([fake_df, real_df])
 
+    # Class distribution
     st.subheader("Class Distribution")
     class_counts = df["class"].value_counts()
     labels = ["Fake News", "Real News"]
@@ -96,6 +100,7 @@ def dataset_visualisation():
     plt.ylabel("Count")
     st.pyplot(fig)
 
+    # Word Clouds
     st.subheader("Word Clouds")
     col1, col2 = st.columns(2)
 
@@ -116,6 +121,7 @@ def dataset_visualisation():
         plt.axis("off")
         st.pyplot(plt.gcf())
 
+    # Top Words
     st.subheader("Top 20 Most Frequent Words in Each Class")
     def plot_top_words(text, title, color):
         words = text.split()
@@ -130,6 +136,7 @@ def dataset_visualisation():
     plot_top_words(fake_text, "Fake News", "red")
     plot_top_words(real_text, "Real News", "green")
 
+# ----------------- Confidence Chart -----------------
 def show_confidence_chart(confidences):
     st.subheader("📈 Confidence Comparison")
     model_names = [name for name, _ in confidences]
@@ -143,10 +150,12 @@ def show_confidence_chart(confidences):
         ax.text(v + 1, i, f"{v}%", va='center')
     st.pyplot(fig)
 
+# ----------------- Streamlit App -----------------
 def run_streamlit_app():
     st.title("📰 News Sentry")
     model_details()
 
+    # Dataset visualisation section in dropdown/expander
     with st.expander(" Show Dataset Visualisation"):
         dataset_visualisation()
 
